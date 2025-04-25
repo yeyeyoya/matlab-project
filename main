@@ -1,0 +1,34 @@
+clear all; 
+close all; 
+clc;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Load input file and assemble structure
+[file_i,xy,nnod,sizee,idb,ndof,incid,l,gamma,m,EA,EJ,T,posit,nbeam,pr]=loadstructure;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw structure
+dis_stru(posit,l,gamma,xy,pr,idb,ndof);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Assemble mass and stiffness matricies
+[M,K] = assem(incid,l,m,EA,EJ,T,gamma,idb);
+
+[M,K]=ex_2(M,K,idb); %adding concentrated values
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Compute natural frequencies and mode shapes
+MFF = M(1:ndof,1:ndof);
+MCF = M(ndof+1:end,1:ndof);
+MFC = M(1:ndof,ndof+1:end);
+MCC = M(ndof+1:end,ndof+1:end);
+
+KFF = K(1:ndof,1:ndof);
+KCF = K(ndof+1:end,1:ndof);
+KFC = K(1:ndof,ndof+1:end);
+KCC = K(ndof+1:end,ndof+1:end);
+
+[modes, omega] = eig(MFF\KFF);
+omega = sqrt(diag(omega));
+[omega,i_omega] = sort(omega);
+freq0 = omega/2/pi;
+modes = modes(:,i_omega);
